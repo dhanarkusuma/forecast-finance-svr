@@ -1,0 +1,36 @@
+services:
+  jupyter-cpu:
+    profiles: [cpu]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jupyter-cpu
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/workspace        # your local project folder
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=""     # explicitly hide any GPU
+    restart: unless-stopped
+
+  jupyter-gpu:
+    profiles: [gpu]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jupyter-gpu
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/workspace        # same local project folder
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all              # use all available GPUs
+              capabilities: [gpu]
+    restart: unless-stopped
